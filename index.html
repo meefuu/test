@@ -1,0 +1,374 @@
+<html>
+<head>
+    <title>Hello Kitty: Heart Quest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #FFC0CB;
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', 'Arial', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            cursor: none; 
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* --- BIGGER SAKURA PETALS --- */
+        .sakura {
+            position: fixed;
+            background-color: #FFB7C5;
+            width: 15px;
+            height: 15px;
+            top: -20px;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.8;
+            box-shadow: 3px 3px #FF97A5;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg) translateX(0); }
+            100% { transform: translateY(110vh) rotate(360deg) translateX(80px); }
+        }
+
+        /* --- THE BOW --- */
+        #bow-cursor {
+            position: fixed;
+            width: 50px;
+            height: auto;
+            z-index: 99999;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            left: 0; top: 0;
+        }
+
+        h1 { 
+            font-family: 'Press Start 2P', cursive;
+            color: #FF6F77; 
+            text-shadow: 3px 3px white; 
+            text-align: center; 
+            font-size: 20px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+
+        .floating { animation: float 3s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* --- BUTTONS --- */
+        button {
+            padding: 15px 30px; 
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px; 
+            border: 4px solid #ffffff; 
+            background-color: #FF6F77; 
+            color: white; 
+            cursor: none; 
+            box-shadow: 4px 4px 0px #d65a61;
+            transition: all 0.1s;
+            outline: 2px solid #FF6F77;
+            z-index: 10;
+        }
+
+        button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #d65a61; }
+
+        /* --- SCREEN 1: INVITE --- */
+        #invite-screen { display: flex; flex-direction: column; align-items: center; z-index: 10; }
+        
+        /* DISTANCE BETWEEN BUTTONS */
+        .button-wrapper { 
+            display: flex; 
+            gap: 180px; /* Increased distance */
+            margin-top: 40px; 
+            height: 100px; 
+            align-items: center; 
+        }
+
+        #noBtn { position: relative; transition: left 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), top 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        #plead-text {
+            font-family: 'Press Start 2P', cursive;
+            position: fixed; 
+            bottom: 40px; 
+            color: #ffffff; 
+            text-shadow: 2px 2px #d65a61;
+            font-size: 10px; 
+            display: none; 
+            z-index: 5;
+        }
+
+        /* --- OTHER SCREENS --- */
+        #game-screen { display: none; width: 100%; height: 100%; position: relative; z-index: 20; }
+        #win-screen { display: none; flex-direction: column; align-items: center; z-index: 30; }
+        #prize-screen { 
+            display: none; width: 100%; height: 100%; 
+            flex-direction: column; align-items: center;
+            padding: 40px; box-sizing: border-box;
+            overflow-y: auto; z-index: 40;
+        }
+
+        /* --- TARGET & SCORE --- */
+        #target { position: absolute; width: 90px; transition: 0.3s ease; z-index: 50; filter: drop-shadow(0 5px 15px rgba(255,111,119,0.4)); }
+        #score-board { 
+            font-family: 'Press Start 2P', cursive;
+            position: absolute; top: 25px; left: 25px; font-size: 12px; 
+            color: #FF6F77; background: white; padding: 15px; border: 4px solid #FF6F77;
+            box-shadow: 4px 4px 0px white; z-index: 10;
+        }
+
+        /* --- ENVELOPES --- */
+        #envelope-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px; width: 100%; max-width: 1000px;
+            justify-items: center; margin-top: 30px; padding-bottom: 50px;
+        }
+        .envelope {
+            background: white; width: 200px; height: 130px;
+            border: 3px solid #FF6F77; border-radius: 2px;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; transition: transform 0.6s; 
+            transform-style: preserve-3d; 
+            box-shadow: 6px 6px 0px rgba(214, 90, 97, 0.2);
+        }
+        .envelope::before { content: "✉️"; color: #FF6F77; font-size: 50px; position: absolute; backface-visibility: hidden; }
+        .envelope-text {
+            position: absolute; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            padding: 15px; box-sizing: border-box; font-size: 14px; text-align: center; color: #FF6F77;
+            background: #fff0f3; backface-visibility: hidden; transform: rotateY(180deg); border: 1px solid #FF6F77;
+        }
+        .envelope.open { transform: rotateY(180deg); }
+
+        /* --- PRESENT --- */
+        #secret-gift-container {
+            display: none; 
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+            padding-bottom: 100px;
+        }
+
+        .gift-box {
+            width: 100px; height: 100px;
+            background: #FF85A2;
+            position: relative;
+            border: 4px solid #FF6F77;
+            cursor: none;
+            transition: 0.3s;
+        }
+
+        .gift-box::after {
+            content: "";
+            position: absolute; width: 20px; height: 100%;
+            background: #FFD1DC; left: 40px;
+            border-left: 4px solid #FF6F77; border-right: 4px solid #FF6F77;
+        }
+
+        .gift-lid {
+            position: absolute; top: -20px; left: -10px;
+            width: 120px; height: 30px;
+            background: #FF85A2; border: 4px solid #FF6F77;
+            z-index: 2; transition: transform 0.5s;
+        }
+
+        .gift-lid::after {
+            content: "";
+            position: absolute; width: 20px; height: 100%;
+            background: #FFD1DC; left: 46px;
+            border-left: 4px solid #FF6F77; border-right: 4px solid #FF6F77;
+        }
+
+        .gift-box.open .gift-lid { transform: translateY(-50px) rotate(-15deg); opacity: 0; }
+        
+        #qr-placeholder {
+            display: none; width: 220px; height: 220px;
+            background: white; border: 6px solid #FF6F77;
+            margin-top: 20px; padding: 10px; box-shadow: 8px 8px 0px white;
+        }
+
+        #qr-placeholder img { width: 100%; height: 100%; object-fit: contain; }
+
+        .heart-bullet { position: absolute; font-size: 25px; pointer-events: none; z-index: 100; animation: burst 0.5s forwards; }
+        @keyframes burst { 0% { transform: scale(1); } 100% { transform: scale(2.5) translateY(-20px); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div id="invite-screen">
+        <h1 id="game-header">LET'S PLAY A GAME!</h1>
+        <img src="Hello Kitty Gif.gif" class="floating" style="width:250px; margin-bottom:20px;">
+        <div class="button-wrapper">
+            <button onclick="showShooter()">YES</button>
+            <button id="noBtn" onmouseover="moveNo()">NO</button>
+        </div>
+        <div id="plead-text">please say yes :(</div>
+    </div>
+
+    <div id="game-screen" onclick="fire(event)">
+        <div id="score-board">SCORE: <span id="score">0</span>/10</div>
+        <img id="target" src="Hello Kitty Gif.gif" onclick="hit(event)">
+    </div>
+
+    <div id="win-screen">
+        <h1 class="floating">YOU WON!! 🏆</h1>
+        <img src="Hello Kitty Gif.gif" style="width:150px; margin-bottom:20px;">
+        <button onclick="showPrize()">CLAIM PRIZE</button>
+    </div>
+
+    <div id="prize-screen">
+        <h1>14 REASONS TO LOVE YOU</h1>
+        <div id="envelope-grid"></div>
+        
+        <div id="secret-gift-container">
+            <h1 style="font-size: 14px;">A SPECIAL GIFT FOR YOU ❤️</h1>
+            <div class="gift-box" onclick="openGift(this)">
+                <div class="gift-lid"></div>
+            </div>
+            <div id="qr-placeholder">
+                <img src="YOUR_QR_CODE_IMAGE_URL_HERE" alt="QR Code Surprise">
+            </div>
+        </div>
+    </div>
+
+    <img id="bow-cursor" src="bow.png" alt="Bow">
+
+    <script>
+        const bow = document.getElementById('bow-cursor');
+        const scoreVal = document.getElementById('score');
+        const gameHeader = document.getElementById('game-header');
+        const pleadText = document.getElementById('plead-text');
+        let score = 0;
+        let jumpCount = 0;
+        let openedCount = 0;
+
+        const messages = [
+            "You're Incredibly cute", "You're super duper amazing", "The handsomest boy in the whole world", 
+            "You always make me smile", "You're always there for me", " The most helpful person",
+            "You're the most caring boy", "The sweetest baby", "The funniest in the world", 
+            "The silliest", "Filled with so much love", "The most gentle", 
+            "The most intelligent", "I love you so much"
+        ];
+
+        function createSakura() {
+            const sakura = document.createElement('div');
+            sakura.className = 'sakura';
+            sakura.style.left = Math.random() * 100 + 'vw';
+            sakura.style.animationDuration = (Math.random() * 3 + 5) + 's';
+            const size = (Math.random() * 10 + 10) + 'px';
+            sakura.style.width = sakura.style.height = size;
+            document.body.appendChild(sakura);
+            setTimeout(() => sakura.remove(), 8000);
+        }
+        setInterval(createSakura, 400);
+
+        document.addEventListener('mousemove', e => {
+            bow.style.left = e.clientX + 'px';
+            bow.style.top = e.clientY + 'px';
+        });
+
+        function moveNo() {
+            jumpCount++;
+            const no = document.getElementById('noBtn');
+            
+            // SHOW PLEAD TEXT AFTER 3 JUMPS
+            if (jumpCount >= 3) {
+                pleadText.style.display = "block";
+            }
+            
+            if (jumpCount >= 8) {
+                gameHeader.innerText = "HONEY PLEASE!!";
+                gameHeader.style.color = "#d60000";
+            }
+            no.style.position = "fixed";
+            no.style.left = Math.random() * (window.innerWidth - 120) + 'px';
+            no.style.top = Math.random() * (window.innerHeight - 60) + 'px';
+        }
+
+        function showShooter() {
+            document.getElementById('invite-screen').style.display = "none";
+            document.getElementById('game-screen').style.display = "block";
+            teleport();
+        }
+
+        function teleport() {
+            const target = document.getElementById('target');
+            target.style.left = Math.random() * (window.innerWidth - 150) + 'px';
+            target.style.top = Math.random() * (window.innerHeight - 150) + 'px';
+        }
+
+        function fire(e) {
+            const h = document.createElement('div');
+            h.className = 'heart-bullet'; h.innerHTML = '❤️';
+            h.style.left = e.clientX - 10 + 'px'; h.style.top = e.clientY - 10 + 'px';
+            document.body.appendChild(h);
+            setTimeout(() => h.remove(), 500);
+        }
+
+        function hit(e) {
+            e.stopPropagation();
+            score++;
+            scoreVal.innerText = score;
+            if (score >= 10) {
+                document.getElementById('game-screen').style.display = "none";
+                document.getElementById('win-screen').style.display = "flex";
+            } else {
+                teleport();
+            }
+        }
+
+        function showPrize() {
+            document.getElementById('win-screen').style.display = "none";
+            const prizeScreen = document.getElementById('prize-screen');
+            const grid = document.getElementById('envelope-grid');
+            prizeScreen.style.display = "flex";
+            if(grid.children.length === 0) {
+                for (let i = 0; i < 14; i++) {
+                    const env = document.createElement('div');
+                    env.className = 'envelope';
+                    const textDiv = document.createElement('div');
+                    textDiv.className = 'envelope-text';
+                    textDiv.innerText = messages[i];
+                    env.appendChild(textDiv);
+                    env.onclick = function() { 
+                        if(!this.classList.contains('open')) {
+                            this.classList.add('open');
+                            openedCount++;
+                            checkAllOpen();
+                        }
+                    };
+                    grid.appendChild(env);
+                }
+            }
+        }
+
+        function checkAllOpen() {
+            if (openedCount >= 14) {
+                document.getElementById('secret-gift-container').style.display = 'flex';
+                setTimeout(() => {
+                    document.getElementById('secret-gift-container').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+            }
+        }
+
+        function openGift(element) {
+            element.classList.add('open');
+            setTimeout(() => {
+                document.getElementById('qr-placeholder').style.display = 'block';
+                document.getElementById('qr-placeholder').scrollIntoView({ behavior: 'smooth' });
+            }, 600);
+        }
+    </script>
+</body>
+</html>
